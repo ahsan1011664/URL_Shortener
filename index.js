@@ -24,18 +24,24 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 app.post('/api/shorturl', (req, res) => {
-  const Url = req.body.url;
-  const host = urlParser.parse(Url).hostname;
+  const originalUrl = req.body.url;
 
-  dns.lookup(host, (err) => {
+  // Check if the URL is valid (use a basic format check)
+  try {
+    new URL(originalUrl); // If invalid, this will throw an error
+  } catch (err) {
+    return res.json({ error: 'invalid url' });
+  }
+
+  const hostname = urlParser.parse(originalUrl).hostname;
+
+  dns.lookup(hostname, (err) => {
     if (err) {
-      return res.json({
-         error: 'URL is Invalid '
-         });
+      return res.json({ error: 'invalid url' });
     } else {
-      const short_URL = urls.length + 1;
-      urls.push({ originalURL: Url, shortURL: short_URL });
-      res.json({ originalURL: Url, shortURL: short_URL });
+      const shortUrl = urls.length + 1;
+      urls.push({ original_url: originalUrl, short_url: shortUrl });
+      res.json({ original_url: originalUrl, short_url: shortUrl });
     }
   });
 });
